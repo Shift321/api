@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"errors"
 )
 
 type book struct {
@@ -20,10 +22,35 @@ var books = []book{
 }
 
 func getBooks(c *gin.Context) {
+	// Return all books
 	c.IndentedJSON(http.StatusOK, books)
 }
 
+func bookById(c *gin.Context) {
+	// Return book with current id
+	id := c.Param("id")
+	book, err := getBookById(id)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message":"Book not found."})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, book)
+}
+
+func getBookById(id string) (*book, error) {
+	// Check if book with current id exists
+	for i, b := range books {
+		if b.ID == id {
+			return &books[i], nil
+
+		}
+	}
+	return nil, errors.New("book not found")
+}
+
 func createBook(c *gin.Context) {
+	// Create a book
 	var newBook book
 
 	if err := c.BindJSON(&newBook); err != nil {
@@ -34,8 +61,10 @@ func createBook(c *gin.Context) {
 }
 
 func main() {
+	// Main func create a router 
 	router := gin.Default()
 	router.GET("/books", getBooks)
 	router.POST("/books", createBook)
+	router.GET("/books/:id", bookById)
 	router.Run("localhost:8080")
 }

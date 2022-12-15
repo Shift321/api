@@ -23,7 +23,7 @@ func main() {
 }
 ```
 
-## Create books function
+## Create books
 Create a book and adds it to struct
 ```go
 func createBook(c *gin.Context) {
@@ -36,10 +36,38 @@ func createBook(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newBook)
 }
 ```
-## Get books function
+## Get books
 Get books using gin context
 ```go
 func getBooks(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, books)
+}
+```
+## Check if book exists
+Check that book with id exists
+```go
+func getBookById(id string) (*book, error) {
+	for i, b := range books {
+		if b.ID == id {
+			return &books[i], nil
+
+		}
+	}
+	return nil, errors.New("book not found")
+}
+```
+
+## Get book by id
+Get book by id if not found error 404
+```go
+func bookById(c *gin.Context) {
+	id := c.Param("id")
+	book, err := getBookById(id)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found."})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, book)
 }
 ```
