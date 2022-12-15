@@ -43,19 +43,6 @@ func getBooks(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, books)
 }
 ```
-## Check if book exists
-Check that book with id exists
-```go
-func getBookById(id string) (*book, error) {
-	for i, b := range books {
-		if b.ID == id {
-			return &books[i], nil
-
-		}
-	}
-	return nil, errors.New("book not found")
-}
-```
 
 ## Get book by id
 Get book by id if not found error 404
@@ -69,5 +56,60 @@ func bookById(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, book)
+}
+```
+## Checkout book
+Checkout book that reduce quantity by 1
+```go
+func checkoutBook(c *gin.Context) {
+	book := checkParams(c)
+	if book == nil {
+		return
+	}
+	book.Quantity -= 1
+	c.IndentedJSON(http.StatusOK, book)
+}
+```
+## Return book
+Rturn book that increase quantity by 1
+```go
+func returnBook(c *gin.Context) {
+	book := checkParams(c)
+	if book == nil {
+		return
+	}
+	book.Quantity += 1
+	c.IndentedJSON(http.StatusOK, book)
+}
+```
+## Util funcs
+
+Check that book with id exists
+```go
+func getBookById(id string) (*book, error) {
+	for i, b := range books {
+		if b.ID == id {
+			return &books[i], nil
+
+		}
+	}
+	return nil, errors.New("book not found")
+}
+```
+Check params
+```go
+func checkParams(c *gin.Context) *book {
+	id, ok := c.GetQuery("id")
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Missing id query parammetr"})
+		return nil
+	}
+	book, err := getBookById(id)
+	info := fmt.Sprintf("Book with id %s dont exit", id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": info})
+		return nil
+	}
+	return book
 }
 ```
